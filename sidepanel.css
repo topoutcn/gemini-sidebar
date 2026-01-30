@@ -1,0 +1,172 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 右上角设置 */
+#top-right {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  z-index: 10;
+}
+
+#btn-settings {
+  padding: 3px 6px;
+  border: none;
+  background: rgba(0,0,0,0.2);
+  border-radius: 50%;
+  color: #aaa;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#btn-settings:hover {
+  color: #fff;
+  background: rgba(0,0,0,0.4);
+}
+
+/* Gemini iframe */
+#gemini-frame {
+  flex: 1;
+  width: 100%;
+  border: none;
+}
+
+/* Toast 提示 - 悬浮在底部栏上方 */
+#toast {
+  position: absolute;
+  bottom: 80px;
+  left: 10px;
+  right: 10px;
+  padding: 8px 12px;
+  background: #137333;
+  border-radius: 8px;
+  color: white;
+  font-size: 12px;
+  text-align: center;
+  z-index: 20;
+  animation: slideUp 0.2s ease;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+
+#toast.hidden {
+  display: none;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 底部操作栏 */
+#bottom-bar {
+  flex-shrink: 0;
+  background: #1a1a2e;
+  border-top: 1px solid #333;
+  padding: 8px 10px;
+}
+
+/* 页面信息 */
+#context-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  color: #ccc;
+  font-size: 12px;
+}
+
+#context-info.hidden {
+  display: none;
+}
+
+#context-icon {
+  font-size: 14px;
+}
+
+#context-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  color: #e0e0e0;
+}
+
+/* 无内容提示 */
+#no-context {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #888;
+  font-size: 12px;
+}
+
+#no-context.hidden {
+  display: none;
+}
+
+#btn-manual-extract {
+  padding: 3px 8px;
+  border: 1px solid #444;
+  border-radius: 12px;
+  background: #2a2a3e;
+  color: #aaa;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+#btn-manual-extract:hover {
+  background: #3a3a5e;
+  color: #fff;
+}
+
+/* 操作按钮 */
+#context-actions {
+  display: flex;
+  gap: 6px;
+}
+
+#context-actions.hidden {
+  display: none;
+}
+
+.ctx-btn {
+  flex: 1;
+  padding: 8px 0;
+  border: 1px solid #444;
+  border-radius: 8px;
+  background: #2a2a3e;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 12px;
+  text-align: center;
+  transition: all 0.15s;
+}
+
+.ctx-btn:hover {
+  background: #3a3a5e;
+  color: #fff;
+}
+
+.ctx-btn.primary {
+  background: #1a73e8;
+  border-color: #1a73e8;
+  color: white;
+}
+
+.ctx-btn.primary:hover {
+  background: #1557b0;
+}

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gemini Sidebar</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <!-- 设置按钮 -->
+  <div id="top-right">
+    <button id="btn-settings" title="设置">⚙️</button>
+  </div>
+
+  <!-- Gemini iframe -->
+  <iframe id="gemini-frame" src="https://gemini.google.com/app" allow="clipboard-read; clipboard-write"></iframe>
+
+  <!-- Toast 提示（悬浮在底部栏上方） -->
+  <div id="toast" class="hidden"></div>
+
+  <!-- 底部操作栏 -->
+  <div id="bottom-bar">
+    <div id="context-info" class="hidden">
+      <span id="context-icon">📄</span>
+      <span id="context-title">未提取</span>
+    </div>
+    <div id="no-context">
+      <span>⏳ 正在提取页面内容...</span>
+      <button id="btn-manual-extract">🔄 手动提取</button>
+    </div>
+    <div id="context-actions" class="hidden">
+      <button id="btn-ask" class="ctx-btn primary" title="发送完整内容到 Gemini">📋 分析此页</button>
+      <button id="btn-summarize" class="ctx-btn" title="发送摘要">📝 总结</button>
+      <button id="btn-translate" class="ctx-btn" title="翻译内容">🌐 翻译</button>
+    </div>
+  </div>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>
