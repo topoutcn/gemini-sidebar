@@ -20,7 +20,25 @@ script.textContent = `
     if (event.data && event.data.type === 'GEMINI_SIDEBAR_PING') {
       window.parent.postMessage({ type: 'GEMINI_SIDEBAR_PONG' }, '*');
     }
+    if (event.data && event.data.type === 'GEMINI_SIDEBAR_CLEAR') {
+      console.log('[Gemini Sidebar MAIN] Received clear request');
+      clearInput();
+    }
   });
+
+  function clearInput() {
+    var input = findInput(document.body);
+    if (!input) return;
+    input.focus();
+    if (input.tagName === 'TEXTAREA' || input.tagName === 'INPUT') {
+      input.value = '';
+    } else {
+      input.innerHTML = '';
+    }
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    console.log('[Gemini Sidebar MAIN] Input cleared');
+  }
 
   function injectAndSend(text) {
     var input = findInput(document.body);

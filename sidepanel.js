@@ -99,6 +99,22 @@ document.getElementById('btn-translate').addEventListener('click', () => {
   });
 });
 
+document.getElementById('btn-clear').addEventListener('click', () => {
+  geminiFrame.contentWindow.postMessage({ type: 'GEMINI_SIDEBAR_CLEAR' }, '*');
+  chrome.runtime.sendMessage({ action: 'sendToGeminiFrame', text: '', clear: true });
+  showToast('已发送清空指令');
+});
+
+document.getElementById('btn-reset').addEventListener('click', async () => {
+  const settings = await getSettings();
+  geminiFrame.src = settings.geminiUrl;
+  showToast('Gemini 已清屏');
+});
+
+document.getElementById('btn-reload-ext').addEventListener('click', () => {
+  chrome.runtime.reload();
+});
+
 document.getElementById('btn-settings').addEventListener('click', () => {
   chrome.tabs.create({ url: 'settings.html' });
 });
@@ -198,11 +214,29 @@ function formatForPrompt(content, prompt) {
 // 启动时检查待处理内容
 chrome.runtime.sendMessage({ action: 'getContent' }, (content) => {
   if (content) {
-    currentContent = content;
-    showContextBar(content);
-    sendTextToGemini(
-      content.type === 'summarize' ? '请总结以下内容的要点：' : '请详细分析以下网页内容：'
-    );
-    chrome.runtime.sendMessage({ action: 'clearContent' });
+    handlePendingContent(content);
   }
 });
+
+// 监听后续右键菜单触发（侧边栏已打开的情况）
+chrome.storage.session.onChanged.addListener((changes) => {
+  if (changes.extractedContent?.newValue) {
+    handlePendingContent(changes.extractedContent.newValue);
+  }
+});
+
+function handlePendingContent(content) {
+  currentContent = content;
+  showContextBar(content);
+
+  if (content.type === 'selection') {
+    // 右键菜单：直接发送选中文本
+    sendTextToGemini(content.text);
+  } else if (content.type === 'summarize') {
+    sendTextToGemini(formatForPrompt(content, '请总结以下内容的要点：'));
+  } else {
+    sendTextToGemini(formatForPrompt(content, '请详细分析以下网页内容：'));
+  }
+
+  chrome.runtime.sendMessage({ action: 'clearContent' });
+}
