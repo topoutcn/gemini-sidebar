@@ -5,9 +5,9 @@ Chrome MV3 扩展，在浏览器侧边栏嵌入 Google Gemini（iframe），用�
 
 ## 关键架构
 - `background.js` — 消息路由中心，标签页监听，动态脚本注入，代理 fetch 请求
-- `sidepanel.js` — 侧边栏 UI 逻辑，两排按钮（分析/总结/翻译 + 清空输入框/清屏/刷新插件），每次点击实时提取内容
+- `sidepanel.js` — 侧边栏 UI 逻辑，两排按钮（分析此页/翻译/译视频 + 清空输入框/清屏/Gems），每次点击实时提取内容
 - `content-script.js` — 通用网页内容提取，YouTube watch 页面让给 youtube-content-script 处理
-- `youtube-content-script.js` — YouTube 视频元数据提取（标题、频道、描述、评论）
+- `youtube-content-script.js` — YouTube 视频元数据提取（标题、频道、描述、评论）+ 自动展开转录面板提取字幕
 - `youtube-page-script.js` — MAIN world 脚本，访问 YouTube 播放器内部 API
 - `gemini-early-inject.js` — MAIN world，patch attachShadow 为 open 模式，监听 postMessage 注入文本
 - `gemini-inject.js` — ISOLATED world，Shadow DOM 遍历查找输入框，备用注入路径
@@ -25,7 +25,7 @@ Chrome MV3 扩展，在浏览器侧边栏嵌入 Google Gemini（iframe），用�
 - **清空输入框** — 通过 postMessage 发送 `GEMINI_SIDEBAR_CLEAR` 给 MAIN world 脚本清除 Gemini 输入框
 
 ## 已知问题
-- **YouTube 字幕提取失败** — timedtext API 对扩展请求返回空内容（status 200, body 空），所有方式（content script fetch、MAIN world fetch、XHR、background proxy）均如此。get_transcript innertube API 返回 400。当前依赖 Gemini 自身分析视频生成时间戳。如用户手动打开 YouTube 转录面板，插件可读取。
+- **YouTube 字幕 API 不可用** — timedtext API 对扩展请求返回空内容，get_transcript innertube API 返回 400。当前通过「译视频」按钮自动点击页面上的「内容转文字」按钮展开转录面板读取字幕，不依赖 API。无字幕的视频会提示失败。
 - **Gemini Shadow DOM** — Gemini 用 closed shadow DOM，必须在 document_start 阶段通过 MAIN world 脚本 monkey-patch attachShadow 强制 open 模式。
 
 ## 开发注意事项

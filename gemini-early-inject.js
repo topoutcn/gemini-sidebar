@@ -24,7 +24,15 @@ script.textContent = `
       console.log('[Gemini Sidebar MAIN] Received clear request');
       clearInput();
     }
+    if (event.data && event.data.type === 'GEMINI_SIDEBAR_OPEN_GEMS') {
+      console.log('[Gemini Sidebar MAIN] Opening Gems page');
+      openGems();
+    }
   });
+
+  function openGems() {
+    window.location.href = 'https://gemini.google.com/gems/view';
+  }
 
   function clearInput() {
     var input = findInput(document.body);

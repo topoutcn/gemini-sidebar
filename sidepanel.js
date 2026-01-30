@@ -7,6 +7,7 @@ const toast = document.getElementById('toast');
 const geminiFrame = document.getElementById('gemini-frame');
 
 let currentContent = null;
+let isOnGemsPage = false;
 
 async function getSettings() {
   return chrome.storage.sync.get({
@@ -84,19 +85,32 @@ document.getElementById('btn-ask').addEventListener('click', () => {
   });
 });
 
-// 总结：只发送正文摘要
-document.getElementById('btn-summarize').addEventListener('click', () => {
-  freshExtractAndDo((content) => {
-    const summary = (content.text || '').substring(0, 5000);
-    sendTextToGemini(`请用简洁的要点总结以下内容：\n\n---\n标题: ${content.title}\n链接: ${content.url}\n\n${summary}`);
-  });
-});
-
 // 翻译：发送正文
 document.getElementById('btn-translate').addEventListener('click', () => {
   freshExtractAndDo((content) => {
     sendTextToGemini(formatForPrompt(content, '请将以下内容翻译成中文：'));
   });
+});
+
+// 译视频：YouTube 专用，提取转录字幕并翻译
+document.getElementById('btn-translate-video').addEventListener('click', async () => {
+  // 先确认是 YouTube 页面
+  const tab = await new Promise(resolve => {
+    chrome.runtime.sendMessage({ action: 'getActiveTab' }, resolve);
+  });
+  if (!tab?.url?.includes('youtube.com/watch')) {
+    showToast('⚠️ 「译视频」仅支持 YouTube 视频页面，请用「分析此页」处理其他页面', 7000);
+    return;
+  }
+  showToast('⏳ 正在提取视频字幕...');
+  const result = await new Promise(resolve => {
+    chrome.runtime.sendMessage({ action: 'extractFromTab', extractAction: 'extractTranscript' }, resolve);
+  });
+  if (!result || result.error) {
+    showToast(`❌ 字幕提取失败：${result?.error || '未知错误'}。请尝试「分析此页」让 Gemini 直接分析视频`, 7000);
+    return;
+  }
+  sendTextToGemini(`请将以下 YouTube 视频字幕翻译成中文：\n\n视频标题: ${result.title || ''}\n链接: ${result.url || ''}\n\n---\n${result.transcript}`);
 });
 
 document.getElementById('btn-clear').addEventListener('click', () => {
@@ -108,11 +122,13 @@ document.getElementById('btn-clear').addEventListener('click', () => {
 document.getElementById('btn-reset').addEventListener('click', async () => {
   const settings = await getSettings();
   geminiFrame.src = settings.geminiUrl;
+  isOnGemsPage = false;
   showToast('Gemini 已清屏');
 });
 
-document.getElementById('btn-reload-ext').addEventListener('click', () => {
-  chrome.runtime.reload();
+document.getElementById('btn-gems').addEventListener('click', () => {
+  isOnGemsPage = true;
+  geminiFrame.contentWindow.postMessage({ type: 'GEMINI_SIDEBAR_OPEN_GEMS' }, '*');
 });
 
 document.getElementById('btn-settings').addEventListener('click', () => {
@@ -130,6 +146,17 @@ window.addEventListener('message', (event) => {
 
 // 核心：发送内容到 Gemini
 async function sendTextToGemini(text) {
+  // 如果当前不在 Gemini 对话首页（比如在 Gems 页面），先清屏回首页
+  if (isOnGemsPage) {
+    const settings = await getSettings();
+    geminiFrame.src = settings.geminiUrl;
+    isOnGemsPage = false;
+    await new Promise(resolve => {
+      geminiFrame.addEventListener('load', resolve, { once: true });
+    });
+    await new Promise(r => setTimeout(r, 1500));
+  }
+
   // 方式1: 直接通过 postMessage 发送给 iframe (MAIN world 脚本监听)
   geminiFrame.contentWindow.postMessage({
     type: 'GEMINI_SIDEBAR_INJECT',
@@ -182,11 +209,11 @@ function showContextBar(content) {
   }
 }
 
-function showToast(msg) {
+function showToast(msg, duration = 5000) {
   toast.textContent = msg;
   toast.style.background = '#137333';
   toast.classList.remove('hidden');
-  setTimeout(() => toast.classList.add('hidden'), 5000);
+  setTimeout(() => toast.classList.add('hidden'), duration);
 }
 
 function formatContent(content) {

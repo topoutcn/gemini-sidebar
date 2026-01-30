@@ -146,6 +146,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   } else if (message.action === 'sendToGeminiFrame') {
     broadcastToGemini({ action: 'injectToGemini', text: message.text });
     sendResponse({ success: true });
+  } else if (message.action === 'getActiveTab') {
+    chrome.tabs.query({ active: true }, (allTabs) => {
+      allTabs.sort((a, b) => (b.lastAccessed || 0) - (a.lastAccessed || 0));
+      const tab = allTabs.find(t => t.url && !t.url.startsWith('chrome') && !t.url.includes('gemini.google.com'));
+      sendResponse(tab || null);
+    });
+    return true;
   } else if (message.action === 'extractFromTab') {
     // 查询所有窗口的活动标签，找到真正的用户网页
     chrome.tabs.query({ active: true }, async (allTabs) => {
